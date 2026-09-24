@@ -14,18 +14,18 @@ volatile sig_atomic_t running = 1;
 SOCKET peerSocket = INVALID_SOCKET;  // Активное соединение с пиром
 CRITICAL_SECTION lock;               // Для потокобезопасного доступа к peerSocket
 
-// ============================================================================
+
 // Цвета консоли (Windows API)
-// ============================================================================
+
 
 #define COLOR_DEFAULT   FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
 #define COLOR_INCOMING  FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY  // Cyan
 #define COLOR_OUTGOING  FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY   // Yellow
 #define COLOR_SYSTEM    FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE        // White
 
-// ============================================================================
+
 // Структура для распарсенных данных сенсоров
-// ============================================================================
+
 
 typedef struct {
     int engineTemp;
@@ -43,9 +43,9 @@ typedef struct {
     int valid;    // флаг успешного парсинга
 } ParsedSensorData;
 
-// ============================================================================
+
 // Пороговые значения для предупреждений
-// ============================================================================
+
 
 #define TEMP_ENGINE_CRITICAL       80
 #define TEMP_ENGINE_WARNING        70   
@@ -62,9 +62,9 @@ typedef struct {
 #define RPM_MAX                    3000
 #define LOAD_WARNING                90
 
-// ============================================================================
+
 // Цвета для предупреждений
-// ============================================================================
+
 
 #define COLOR_WARNING     FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY  // Yellow
 #define COLOR_CRITICAL    FOREGROUND_RED | FOREGROUND_INTENSITY                      // Bright Red
@@ -86,9 +86,9 @@ void signal_handler(int sig) {
     }
 }
 
-// ============================================================================
+
 // Вспомогательные функции
-// ============================================================================
+
 
 char* get_timestamp(char* buf) {
     time_t now = time(NULL);
@@ -98,9 +98,9 @@ char* get_timestamp(char* buf) {
 }
 
 
-// ============================================================================
+
 // Инициализация и завершение
-// ============================================================================
+
 
 void initialize_program(void) {
     signal(SIGINT, signal_handler);
@@ -128,9 +128,9 @@ void cleanup_resources(void) {
 }
 
 
-// ============================================================================
+
 // Парсинг адреса
-// ============================================================================
+
 
 int parse_address(const char* addr, char* ip_out, int* port_out) {
     const char* sep = strchr(addr, ':');
@@ -154,9 +154,9 @@ int parse_address(const char* addr, char* ip_out, int* port_out) {
     return 0;
 }
 
-// ============================================================================
+
 // Проверка аргументов
-// ============================================================================
+
 
 void validate_arguments(int argc, char* argv[], int* listen_port, const char** remote_addr) {
     if (argc < 2) {
@@ -173,9 +173,9 @@ void validate_arguments(int argc, char* argv[], int* listen_port, const char** r
     *remote_addr = (argc >= 3) ? argv[2] : NULL;
 }
 
-// ============================================================================
+
 // Создание слушающего сокета
-// ============================================================================
+
 
 SOCKET create_listening_socket(int port) {
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -208,9 +208,9 @@ SOCKET create_listening_socket(int port) {
     return sock;
 }
 
-// ============================================================================
-// Парсинг строки данных формата key=value (Windows-совместимая версия)
-// ============================================================================
+
+// Парсинг строки данных формата key=value
+
 
 int parse_sensor_data(const char* buffer, ParsedSensorData* data) {
     if (!buffer || !data) return -1;
@@ -259,10 +259,10 @@ int parse_sensor_data(const char* buffer, ParsedSensorData* data) {
     return data->valid ? 0 : -1;
 }
 
-// ============================================================================
+
 // Проверка данных и генерация предупреждений
 // Возвращает уровень: 0 = ОК, 1 = Warning, 2 = Critical
-// ============================================================================
+
 
 int check_warnings(const ParsedSensorData* data, char* warning_msg, size_t msg_size) {
     if (!data || !data->valid) {
@@ -343,9 +343,8 @@ int check_warnings(const ParsedSensorData* data, char* warning_msg, size_t msg_s
     return level;
 }
 
-// ============================================================================
 // Поток: приём сообщений от пира 
-// ============================================================================
+
 
 DWORD WINAPI ReceiveThread(LPVOID lpParam) {
     char buffer[BUFFER_SIZE];
@@ -398,9 +397,9 @@ DWORD WINAPI ReceiveThread(LPVOID lpParam) {
     return 0;
 }
 
-// ============================================================================
+
 // Поток: сервер (принимает входящие подключения)
-// ============================================================================
+
 
 DWORD WINAPI ServerThread(LPVOID lpParam) {
     int listenPort = *(int*)lpParam;
@@ -476,9 +475,9 @@ DWORD WINAPI ServerThread(LPVOID lpParam) {
     return 0;
 }
 
-// ============================================================================
+
 // Подключение к удалённому пиру
-// ============================================================================
+
 
 void connect_to_peer(const char* address) {
     char ip[64] = {0};
@@ -543,9 +542,9 @@ void connect_to_peer(const char* address) {
     LeaveCriticalSection(&lock);
 }
 
-// ============================================================================
+
 // СЛОВАРЬ КОМАНД (Command Dictionary)
-// ============================================================================
+
 
 // Тип функции-обработчика команды: возвращает -1 для выхода, 0 для продолжения
 typedef int (*CommandHandler)(const char* args);
@@ -557,9 +556,9 @@ typedef struct {
     const char* description;    // Краткое описание (для будущего расширения)
 } Command;
 
-// ============================================================================
+
 // Обработчики команд
-// ============================================================================
+
 
 // Обработчик: /exit
 int cmd_exit(const char* args) {
@@ -567,21 +566,16 @@ int cmd_exit(const char* args) {
     return -1;  // Сигнал к выходу
 }
 
-// ============================================================================
-// Таблица команд (легко расширять: добавьте новую строку!)
-// ============================================================================
-
 static const Command COMMAND_TABLE[] = {
     { "/exit",  cmd_exit,  "Exit the chat" },
-    // Пример добавления новой команды:
-    // { "/color", cmd_color, "Change console color" },
+
 };
 
 #define COMMAND_COUNT (sizeof(COMMAND_TABLE) / sizeof(COMMAND_TABLE[0]))
 
-// ============================================================================
+
 // Поиск и выполнение команды из таблицы
-// ============================================================================
+
 
 int execute_command(const char* input) {
     size_t i; 
@@ -605,9 +599,9 @@ int execute_command(const char* input) {
     return 0;  // Продолжаем работу
 }
 
-// ============================================================================
+
 // Обработка пользовательского ввода 
-// ============================================================================
+
 
 int process_user_input(void) {
     char input[BUFFER_SIZE];
@@ -654,9 +648,7 @@ int process_user_input(void) {
     return 0;
 }
 
-// ============================================================================
 // Helper-функции для запуска потоков (ошибки обрабатываются внутри)
-// ============================================================================
 
 void start_server_thread(int listen_port) {
     HANDLE hServer = CreateThread(NULL, 0, ServerThread, &listen_port, 0, NULL);
@@ -676,9 +668,7 @@ void start_receive_thread(void) {
     CloseHandle(hRecv);
 }
 
-// ============================================================================
-// Главная функция (полностью модульная)
-// ============================================================================
+// Главная функция 
 
 int main(int argc, char* argv[]) {
     int listen_port;
